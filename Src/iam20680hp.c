@@ -40,12 +40,7 @@ IAM20680HP_err_t iam20680hpStatus;
 
 uint8_t data[20];
 
-/*! @brief Check if the device is connected and is the correct device
- *
- *  This function checks if the device is connected by reading the WHO_AM_I register and comparing it to the expected value
- *
- *  @return IAM20680HP_OK if device is connected, IAM20680HP_ERR_DEVICE_ID if device is not connected
- */
+
 IAM20680HP_err_t iam20680hpCheckDeviceID()
 {
     uint8_t deviceID;
@@ -72,12 +67,6 @@ IAM20680HP_err_t iam20680hpCheckDeviceID()
     return IAM20680HP_OK;
 }
 
-/*! @brief Reset the device
- *
- *  This function resets the device by writing to the PWR_MGMT_1 register
- *
- *  @return IAM20680HP_OK if device is reset, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpResetDevice()
 {
 
@@ -95,13 +84,6 @@ IAM20680HP_err_t iam20680hpResetDevice()
     return IAM20680HP_OK;
 }
 
-/*! @brief Read the self test registers of the device (Gyro and Accelerometer)
- *
- *  This function reads the self test registers of the device
- *
- *  @param selfTest Pointer to the struct where the self test values will be stored
- *  @return IAM20680HP_OK if self test registers are read, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpReadSelfTestRegisters(IAM20680HP_selfTest_t *selfTest)
 {
 
@@ -131,14 +113,6 @@ IAM20680HP_err_t iam20680hpReadSelfTestRegisters(IAM20680HP_selfTest_t *selfTest
     return IAM20680HP_OK;
 }
 
-/*! @brief Adjust the gyro offset
- *
- * This function adjusts the gyro offset by writing the offset values to the device or reading the offset values from the device
- *
- * @param gyroOffset Pointer to the struct where the offset values will be stored
- * @param writeOffset If true, the offset values will be written to the device, if false, the offset values will be read from the device
- * @return IAM20680HP_OK if the offset values are adjusted/read, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpGyroOffsetAdjustment(IAM20680HP_gyroOffset_t *gyroOffset, bool writeOffset)
 {
 
@@ -182,18 +156,12 @@ IAM20680HP_err_t iam20680hpGyroOffsetAdjustment(IAM20680HP_gyroOffset_t *gyroOff
     return IAM20680HP_OK;
 }
 
-/*! @brief Set the sample rate divider
- *
- * @param sampleRateDivider The sample rate divider value. Sample_rate = Internal_Sample_Rate / (1 + sampleRateDivider), internal sample rate is 1kHz
- * @param writeDivider If true, the sample rate divider value will be written to the device, if false, the sample rate divider value will be read from the device
- * @return IAM20680HP_OK if the sample rate divider value is read/set, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
-IAM20680HP_err_t iam20680SampleRateDivider(uint8_t sampleRateDivider, bool writeDivider)
+IAM20680HP_err_t iam20680SampleRateDivider(uint8_t *sampleRateDivider, bool writeDivider)
 {
     if (writeDivider)
     {
         data[0] = IAM20680HP_SMPLRT_DIV;
-        data[1] = sampleRateDivider;
+        data[1] = *sampleRateDivider;
 
         status = HAL_I2C_Master_Transmit(&I2C_HANDLER, (uint16_t)(IAM20680HP_I2C_ADDRESS << 1), data, 2, IAM20680HP_I2C_TIMEOUT);
         if (status != HAL_OK)
@@ -216,18 +184,12 @@ IAM20680HP_err_t iam20680SampleRateDivider(uint8_t sampleRateDivider, bool write
             return IAM20680HP_ERR_I2C;
         }
 
-        sampleRateDivider = data[0];
+        *sampleRateDivider = data[0];
     }
 
     return IAM20680HP_OK;
 }
 
-/*! @brief Check or write the FiFo status, when FiFo is on, oldest data will be overwritten
- *
- * @param fifoEnabled Pointer to the boolean value that will be set to true if FiFo is enabled, false if FiFo is disabled
- * @param writeFifo If true, the FiFo status will be written to the device, if false, the FiFo status will be read from the device
- * @return IAM20680HP_OK if the FiFo status is read/set, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpConfigFifo(bool *fifoEnabled, bool writeFifo)
 {
     if (writeFifo)
@@ -291,12 +253,6 @@ IAM20680HP_err_t iam20680hpConfigFifo(bool *fifoEnabled, bool writeFifo)
     return IAM20680HP_OK;
 }
 
-/*! @brief Reads or writes the external sync set, enable or disable the external sync
- *
- * @param extSyncSet setting of the external sync
- * @param writeExtSyncSet write or read the external sync setting
- * @return IAM20680HP_OK if the external sync setting is read/set, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpConfigExtSync(uint8_t *extSyncSet, bool writeExtSyncSet)
 {
     if (*extSyncSet > 7)
@@ -352,12 +308,6 @@ IAM20680HP_err_t iam20680hpConfigExtSync(uint8_t *extSyncSet, bool writeExtSyncS
     return IAM20680HP_OK;
 }
 
-/*! @brief Reads or writes the DLPF configuration
- *
- * @param dlpf setting of the DLPF
- * @param writeDlpf write or read the DLPF setting
- * @return IAM20680HP_OK if the DLPF setting is read/set, IAM20680HP_ERR_INVALID_PARAM if the parameter is invalid, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpConfigDlpfCfg(uint8_t *dlpf, bool writeDlpf)
 {
     if (*dlpf > 7)
@@ -412,12 +362,6 @@ IAM20680HP_err_t iam20680hpConfigDlpfCfg(uint8_t *dlpf, bool writeDlpf)
     return IAM20680HP_OK;
 }
 
-/*! @brief Reads or writes the gyro configuration, see page 35 of datasheet for more information
- *
- * @param gyro Pointer to the struct where the gyro configuration values will be stored
- * @param writeConfig If true, the gyro configuration values will be written to the device, if false, the gyro configuration values will be read from the device
- * @return IAM20680HP_OK if the gyro configuration is read/set, IAM20680HP_ERR_INVALID_PARAM if the parameter is invalid, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpGyroConfig(IAM20680HP_gyroConfig_t *gyro, bool writeConfig)
 {
     if (gyro->FS_Sel > 3)
@@ -425,7 +369,7 @@ IAM20680HP_err_t iam20680hpGyroConfig(IAM20680HP_gyroConfig_t *gyro, bool writeC
         return IAM20680HP_ERR_INVALID_PARAM;
     }
 
-    if (gyro->FChoice > 1)
+    if (gyro->FChoice > 2)
     {
         return IAM20680HP_ERR_INVALID_PARAM;
     }
@@ -466,18 +410,12 @@ IAM20680HP_err_t iam20680hpGyroConfig(IAM20680HP_gyroConfig_t *gyro, bool writeC
         gyro->yGyroSelfTest = (data[0] & 0x40) >> 6; // 0b01000000;
         gyro->zGyroSelfTest = (data[0] & 0x20) >> 5; // 0b00100000;
         gyro->FS_Sel = (data[0] & 0x18) >> 3;        // 0b00011000;
-        gyro->FChoice = (data[0] & 0x01);            // 0b00000001;
+        gyro->FChoice = (data[0] & 0x03);            // 0b00000011;
     }
 
     return IAM20680HP_OK;
 }
 
-/*! @brief Reads or writes the accelerometer configuration, see page 36 of datasheet for more information
- *
- * @param accel Pointer to the struct where the accelerometer configuration values will be stored
- * @param writeConfig If true, the accelerometer configuration values will be written to the device, if false, the accelerometer configuration values will be read from the device
- * @return IAM20680HP_OK if the accelerometer configuration is read/set, IAM20680HP_ERR_INVALID_PARAM if the parameter is invalid, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpAccelConfig(IAM20680HP_accelConfig_t *accel, bool writeConfig)
 {
     if (accel->AFS_Sel > 3)
@@ -554,14 +492,6 @@ IAM20680HP_err_t iam20680hpAccelConfig(IAM20680HP_accelConfig_t *accel, bool wri
     return IAM20680HP_OK;
 }
 
-/*! @brief Reads or writes the low power mode configuration, see page 37 of datasheet for more information
- *
- * @param enableLPM Pointer to the boolean value that will be set to true if low power mode is enabled, false if low power mode is disabled
- * @param avgFilterCfg Pointer to the value that will be set to the average filter configuration
- * @param womMode Pointer to the value that will be set to the wake on motion mode
- * @param writeConfig If true, the low power mode configuration values will be written to the device, if false, the low power mode configuration values will be read from the device
- * @return IAM20680HP_OK if the low power mode configuration is read/set, IAM20680HP_ERR_INVALID_PARAM if the parameter is invalid, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpLowPowerMode(bool *enableLPM, uint8_t *avgFilterCfg, uint8_t *womMode, bool writeConfig)
 {
     if (*avgFilterCfg > 3)
@@ -615,12 +545,6 @@ IAM20680HP_err_t iam20680hpLowPowerMode(bool *enableLPM, uint8_t *avgFilterCfg, 
     return IAM20680HP_OK;
 }
 
-/*! @brief Reads or writes the wake on motion configuration, see page 38 of datasheet for more information. Threshold resolution is 4mg/LSB regardless the selected full scale
- *
- * @param womThreshold Pointer to the value that will be set to the wake on motion threshold
- * @param writeWomThreshold If true, the wake on motion threshold value will be written to the device, if false, the wake on motion threshold value will be read from the device
- * @return IAM20680HP_OK if the wake on motion threshold is read/set, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpWakeOnMotionThreshold(uint8_t *womThreshold, bool writeWomThreshold)
 {
 
@@ -656,16 +580,6 @@ IAM20680HP_err_t iam20680hpWakeOnMotionThreshold(uint8_t *womThreshold, bool wri
     return IAM20680HP_OK;
 }
 
-/*! @brief Reads or writes the FiFo enable registry. See page 39 of datasheet for more information
- *
- * @param tempFiFo Pointer to the boolean value that will be set to true if temperature data is stored in FiFo, false if temperature data is not stored in FiFo
- * @param gyroX Pointer to the boolean value that will be set to true if X-axis gyro data is stored in FiFo, false if X-axis gyro data is not stored in FiFo
- * @param gyroY Pointer to the boolean value that will be set to true if Y-axis gyro data is stored in FiFo, false if Y-axis gyro data is not stored in FiFo
- * @param gyroZ Pointer to the boolean value that will be set to true if Z-axis gyro data is stored in FiFo, false if Z-axis gyro data is not stored in FiFo
- * @param accel Pointer to the boolean value that will be set to true if accelerometer data is stored in FiFo, false if accelerometer data is not stored in FiFo
- * @param writeFiFo If true, the FiFo enable registry values will be written to the device, if false, the FiFo enable registry values will be read from the device
- * @return IAM20680HP_OK if the FiFo enable registry values are read/set, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpFiFoEnable(bool *tempFiFo, bool *gyroX, bool *gyroY, bool *gyroZ, bool *accel, bool writeFiFo)
 {
     if (writeFiFo)
@@ -708,11 +622,6 @@ IAM20680HP_err_t iam20680hpFiFoEnable(bool *tempFiFo, bool *gyroX, bool *gyroY, 
     return IAM20680HP_OK;
 }
 
-/*! @brief Reads or writes the fsync interrupt status. Readout clears the bit. See page 39 of datasheet for more information
- *
- *   @param fsyncInt Pointer to the boolean value that will be set to true if fsync interrupt is active, false if fsync interrupt is not active
- *   @return IAM20680HP_OK if the fsync interrupt status is read, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpReadFsyncInterruptStatus(bool *fsyncInt)
 {
     data[0] = IAM20680HP_FSYNC_INT;
@@ -741,12 +650,6 @@ IAM20680HP_err_t iam20680hpReadFsyncInterruptStatus(bool *fsyncInt)
     return IAM20680HP_OK;
 }
 
-/*! @brief Reads or writes the interrupt config/enable. See page 39 and 40 of datasheet for more information
- *
- *  @param intPin Pointer to the struct where the interrupt pin configuration values will be stored
- *  @param writeConfig If true, the interrupt pin configuration values will be written to the device, if false, the interrupt pin configuration values will be read from the device
- *  @return IAM20680HP_OK if the interrupt pin configuration is read/set, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpIntConfig(IAM20680HP_intPinConfig_t *intPin, bool writeConfig)
 {
     if (writeConfig)
@@ -806,11 +709,6 @@ IAM20680HP_err_t iam20680hpIntConfig(IAM20680HP_intPinConfig_t *intPin, bool wri
     return IAM20680HP_OK;
 }
 
-/*! @brief Reads the interrupt status. See page 40 of datasheet for more information. All the bits are cleared after readout
- *
- * @param intStatus Pointer to the struct where the interrupt status values will be stored
- * @return IAM20680HP_OK if the interrupt status is read, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpIntStatus(IAM20680HP_intStatus_t *intStatus)
 {
 
@@ -836,11 +734,6 @@ IAM20680HP_err_t iam20680hpIntStatus(IAM20680HP_intStatus_t *intStatus)
     return IAM20680HP_OK;
 }
 
-/*! @brief Reads the measurements of the accelerometer. See page 40 of datasheet for more information
- *
- * @param accelData Pointer to the struct where the accelerometer data will be stored
- * @return IAM20680HP_OK if the accelerometer data is read, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpReadAccelData(IAM20680HP_accelData_t *accelData)
 {
     data[0] = IAM20680HP_ACCEL_XOUT_H;
@@ -865,11 +758,6 @@ IAM20680HP_err_t iam20680hpReadAccelData(IAM20680HP_accelData_t *accelData)
     return IAM20680HP_OK;
 }
 
-/*! @brief Reads the temperature data. See page 41 of datasheet for more information
- *
- * @param temperature Pointer to the value where the temperature data will be stored, in celcius * 100
- * @return IAM20680HP_OK if the temperature data is read, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpReadTemperatureData(int16_t *temperature)
 {
     data[0] = IAM20680HP_TEMP_OUT_H;
@@ -893,11 +781,6 @@ IAM20680HP_err_t iam20680hpReadTemperatureData(int16_t *temperature)
     return IAM20680HP_OK;
 }
 
-/*! @brief Reads the measurements of the gyroscope. See page 42 of datasheet for more information
- *
- * @param accelData Pointer to the struct where the gyroscope data will be stored
- * @return IAM20680HP_OK if the gyroscope data is read, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpReadGyroData(IAM20680HP_gyroData_t *gyroData)
 {
     data[0] = IAM20680HP_GYRO_XOUT_H;
@@ -922,12 +805,6 @@ IAM20680HP_err_t iam20680hpReadGyroData(IAM20680HP_gyroData_t *gyroData)
     return IAM20680HP_OK;
 }
 
-/*! @brief Reads or writes the signal path reset. See page 42 of datasheet for more information
- *
- * @param accel Pointer to the boolean value that will be set to true if the accelerometer signal path is reset, false if the accelerometer signal path is not reset
- * @param temp Pointer to the boolean value that will be set to true if the temperature signal path is reset, false if the temperature signal path is not reset
- * @param writeReset If true, the signal path reset values will be written to the device, if false, the signal path reset values will be read from the device
- */
 IAM20680HP_err_t iam20680hpSignalPathReset(bool *accel, bool *temp, bool writeReset)
 {
 
@@ -967,12 +844,6 @@ IAM20680HP_err_t iam20680hpSignalPathReset(bool *accel, bool *temp, bool writeRe
     return IAM20680HP_OK;
 }
 
-/*! @brief Reads or writes the accelerometer intelligence control. See page 42 of datasheet for more information
- *
- * @param enable Pointer to the boolean value that will be set to true if the accelerometer intelligence control is enabled, false if the accelerometer intelligence control is disabled
- * @param mode Pointer to the boolean value that will be set to true if the accelerometer intelligence control is in mode 1, false if the accelerometer intelligence control is in mode 0
- * @param writeConfig If true, the accelerometer intelligence control values will be written to the device, if false, the accelerometer intelligence control values will be read from the device
- */
 IAM20680HP_err_t iam20680hpIntelControl(bool *enable, bool *mode, bool writeConfig)
 {
     if (writeConfig)
@@ -1011,12 +882,6 @@ IAM20680HP_err_t iam20680hpIntelControl(bool *enable, bool *mode, bool writeConf
     return IAM20680HP_OK;
 }
 
-/*! @brief Reads or writes the user control. See page 43 of datasheet for more information
- *
- * @param userControl Pointer to the struct where the user control values will be stored
- * @param writeConfig If true, the user control values will be written to the device, if false, the user control values will be read from the device
- * @return IAM20680HP_OK if the user control is read/set, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpUserControl(IAM20680HP_userControl_t *userControl, bool writeConfig)
 {
     if (writeConfig)
@@ -1061,12 +926,6 @@ IAM20680HP_err_t iam20680hpUserControl(IAM20680HP_userControl_t *userControl, bo
     return IAM20680HP_OK;
 }
 
-/*! @brief Reads or writes the power management. See page 43/44 of datasheet for more information
- *
- * @param powerManagement Pointer to the struct where the power management values will be stored
- * @param writeConfig If true, the power management values will be written to the device, if false, the power management values will be read from the device
- * @return IAM20680HP_OK if the power management is read/set, IAM20680HP_ERR_INVALID_PARAM if the parameter is invalid, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpPowerManagement(IAM20680HP_powerManagement_t *powerManagement, bool writeConfig)
 {
     if (powerManagement->clockSel > 7)
@@ -1135,11 +994,6 @@ IAM20680HP_err_t iam20680hpPowerManagement(IAM20680HP_powerManagement_t *powerMa
     return IAM20680HP_OK;
 }
 
-/*! @brief Reads the FiFo count register. See page 44 of datasheet for more information
- *
- * @param fifoCount Pointer to the value where the FiFo count will be stored
- * @return IAM20680HP_OK if the FiFo count is read, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpReadFifoCount(uint16_t *fifoCount)
 {
     data[0] = IAM20680HP_FIFO_COUNTH;
@@ -1162,11 +1016,6 @@ IAM20680HP_err_t iam20680hpReadFifoCount(uint16_t *fifoCount)
     return IAM20680HP_OK;
 }
 
-/*! @brief Reads the FiFo data. See page 44 of datasheet for more information
- *
- * @param fifoData Pointer to the struct where the FiFo data will be stored, writing is not yet supported by code
- * @return IAM20680HP_OK if the FiFo data is read, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpReadFifoData(IAM20680HP_fifoData_t *fifoData)
 {
     data[0] = IAM20680HP_FIFO_R_W;
@@ -1210,12 +1059,6 @@ IAM20680HP_err_t iam20680hpReadFifoData(IAM20680HP_fifoData_t *fifoData)
     return IAM20680HP_OK;
 }
 
-/*! @brief Reads or writes the Accelerometer Offset data. See page 45 of datasheet for more information
- *
- * @param offSet Pointer to the struct where the accelerometer offset values will be stored
- * @param writeConfig If true, the accelerometer offset values will be written to the device, if false, the accelerometer offset values will be read from the device
- * @return IAM20680HP_OK if the accelerometer offset is read/set, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpAccelerometerOffset(IAM20680HP_accelOffset_t *offSet, bool writeConfig)
 {
     if (writeConfig)
@@ -1277,13 +1120,7 @@ IAM20680HP_err_t iam20680hpAccelerometerOffset(IAM20680HP_accelOffset_t *offSet,
 
 
 
-/*! @brief Initialises the device with the standard settings
- *
- * Sometimes it is wise to disable (HAL_NVIC_DisableIRQ) the IRQ function and clear pending IRQs (NVIC_ClearPendingIRQ) before 
- * calling this function, because after resetting the device the IRQ pin could be triggered.
- *
- * @return IAM20680HP_OK if the device is initialised, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
+
 IAM20680HP_err_t iam20680hpInit()
 {
     IAM20680HP_err_t result;
@@ -1300,7 +1137,7 @@ IAM20680HP_err_t iam20680hpInit()
 
     // Output data selection
     uint8_t sampleRateDivider = SAMPLE_RATE_DIV;
-    result = iam20680SampleRateDivider(sampleRateDivider, true); 
+    result = iam20680SampleRateDivider(&sampleRateDivider, true); 
     if (result != IAM20680HP_OK)
         return result;
 
@@ -1331,13 +1168,6 @@ IAM20680HP_err_t iam20680hpInit()
     return IAM20680HP_OK;
 }
 
-
-
-
-/*! @brief Enables the wake on motion function
- *
- * @return IAM20680HP_OK if the wake on motion function is enabled, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpEnableWomModeFunction()
 {
     IAM20680HP_err_t result;
@@ -1430,13 +1260,6 @@ IAM20680HP_err_t iam20680hpEnableWomModeFunction()
     return IAM20680HP_OK;
 }
 
-
-
-
-/*! @brief Disables the wake on motion function
- *
- * @return IAM20680HP_OK if the wake on motion function is disabled, IAM20680HP_ERR_I2C if there is an error during I2C communication
- */
 IAM20680HP_err_t iam20680hpDisableWomModeFunction()
 {
     IAM20680HP_err_t result;
