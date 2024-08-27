@@ -58,15 +58,15 @@ The basic settings for `iam20680hpInit()` are defined in the header file:
 
 
 //INITIAL CONFIGURATION
-#define SAMPLE_RATE_DIV 0x09 //1khz/(1+9) = 100hz
-#define LOW_PASS_FILTER_DLPF_CFG 0x01 //Table 18 datasheet
-#define GYRO_FS_SEL 0x00
-#define GYRO_FCHOICE 0x00
-#define ACCEL_FS_SEL 0x00
-#define ACCEL_FIFO_SIZE 0x00
-#define ACCEL_DEC2_CFG 0x00
-#define ACCEL_FCHOICE 0x00
-#define ACCEL_DLPF_CFG 0x05 
+#define SAMPLE_RATE_DIV 0x00                    //Sample rate divider, 0x09 = 1khz/(1+9) = 100hz
+#define LOW_PASS_FILTER_GYRO_DLPF_CFG 0x00      //Table 17 datasheet, gyro low pass filter
+#define GYRO_FS_SEL 0x00                        //Gyro Full Scale select
+#define GYRO_FCHOICE 0x00                       //Used to bypass DLPF
+#define ACCEL_FS_SEL 0x00                       //Accel Full Scale select
+#define ACCEL_FIFO_SIZE 0x00                    //FIFO size 0x00 = 512byte
+#define ACCEL_DEC2_CFG 0x00                     //Average samples for low power mode
+#define ACCEL_FCHOICE 0x00                      //Used to bypass DLPF
+#define ACCEL_DLPF_CFG 0x05                     //Low pass filter accelerometer 
 ```
 ---
 
