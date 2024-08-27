@@ -1123,6 +1123,7 @@ IAM20680HP_err_t iam20680hpAccelerometerOffset(IAM20680HP_accelOffset_t *offSet,
 
 IAM20680HP_err_t iam20680hpInit()
 {
+    static bool firstInitialized = false;
     IAM20680HP_err_t result;
 
     // Sequence is first to reset device, see page 23 of datasheet
@@ -1130,19 +1131,22 @@ IAM20680HP_err_t iam20680hpInit()
     if (result != IAM20680HP_OK)
         return result;
     
-    // Then to check if the device is present
-    result = iam20680hpCheckDeviceID();
-    if (result != IAM20680HP_OK)
-        return result;  
+    // Then to check if the device is present, but only once
+    if (!firstInitialized)
+    {
+        result = iam20680hpCheckDeviceID();
+        if (result != IAM20680HP_OK)
+            return result;
+    } 
 
-    // Output data selection
+    // Output data rate selection
     uint8_t sampleRateDivider = SAMPLE_RATE_DIV;
     result = iam20680SampleRateDivider(&sampleRateDivider, true); 
     if (result != IAM20680HP_OK)
         return result;
 
     // Config dlpf low pass filter setting
-    uint8_t dlpf = LOW_PASS_FILTER_DLPF_CFG;
+    uint8_t dlpf = LOW_PASS_FILTER_GYRO_DLPF_CFG;
     result = iam20680hpConfigDlpfCfg(&dlpf, true);
     if (result != IAM20680HP_OK)
         return result;
@@ -1165,6 +1169,9 @@ IAM20680HP_err_t iam20680hpInit()
     accelConfig.dec2Cfg = ACCEL_DEC2_CFG;
     iam20680hpAccelConfig(&accelConfig, true);
 
+    if (!firstInitialized)
+        firstInitialized = true;
+
     return IAM20680HP_OK;
 }
 
@@ -1174,7 +1181,8 @@ IAM20680HP_err_t iam20680hpEnableWomModeFunction()
 
     // On the basis of AN-000409, WoM wake on motion is enabled
 
-    // Device reset at init device, not on re-enable
+    // Device reset and reinit neccessary to clear ACCEL_INTEL_MODE offset, see section 3 of AN-000409 (tried without, no succes)
+    iam20680hpInit();
 
     // Gyro and accel are put off
     IAM20680HP_powerManagement_t powerManagement;
@@ -1183,6 +1191,7 @@ IAM20680HP_err_t iam20680hpEnableWomModeFunction()
     if (result != IAM20680HP_OK)
         return result;
 
+    powerManagement.accelCycle = 0;
     powerManagement.stby_xg = 1;
     powerManagement.stby_yg = 1;
     powerManagement.stby_zg = 1;
@@ -1233,7 +1242,7 @@ IAM20680HP_err_t iam20680hpEnableWomModeFunction()
     if (result != IAM20680HP_OK)
         return result;
 
-    // Enable accell intel. modeIntel seems to have to be true.
+    // Enable accell intel.
     bool enableIntel = true;
     bool modeIntel = ACCEL_INTEL_MODE;
     result = iam20680hpIntelControl(&enableIntel, &modeIntel, true);
@@ -1241,10 +1250,10 @@ IAM20680HP_err_t iam20680hpEnableWomModeFunction()
         return result;
 
     // Gyro off, put accel in low energy mode
-    bool gyroEnable = false;
+    bool gyroLPM = true;
     uint8_t avgCfg = ACCEL_AVG_CFG;
     uint8_t accel_wom = ACCEL_FREQ_WAKEUP;
-    result = iam20680hpLowPowerMode(&gyroEnable, &avgCfg, &accel_wom, true);
+    result = iam20680hpLowPowerMode(&gyroLPM, &avgCfg, &accel_wom, true);
     if (result != IAM20680HP_OK)
         return result;
 
@@ -1264,12 +1273,12 @@ IAM20680HP_err_t iam20680hpDisableWomModeFunction()
 {
     IAM20680HP_err_t result;
 
-    // On the basis of page 24 of the datasheet, WoM wake on motion is enabled
     IAM20680HP_powerManagement_t powerManagement;
     memset(&powerManagement, 0, sizeof(powerManagement));
     iam20680hpPowerManagement(&powerManagement, false);
 
     // Gyro and accel are put off
+    powerManagement.accelCycle = 0;
     powerManagement.stby_xg = 1;
     powerManagement.stby_yg = 1;
     powerManagement.stby_zg = 1;
@@ -1278,16 +1287,16 @@ IAM20680HP_err_t iam20680hpDisableWomModeFunction()
     powerManagement.stby_za = 1;
     iam20680hpPowerManagement(&powerManagement, true);
 
-    // Enable accell intel.
+    // Gyro on, exit low energy mode
+    bool gyroLPM = false;
+    uint8_t avgCfg = ACCEL_AVG_CFG;
+    uint8_t accel_wom = ACCEL_FREQ_WAKEUP;
+    iam20680hpLowPowerMode(&gyroLPM, &avgCfg, &accel_wom, true);
+
+    // Disable accell intel.
     bool enableIntel = false;
     bool modeIntel = ACCEL_INTEL_MODE;
     iam20680hpIntelControl(&enableIntel, &modeIntel, true);
-
-    // Gyro off, put accel in low energy mode
-    bool gyroEnable = true;
-    uint8_t avgCfg = ACCEL_AVG_CFG;
-    uint8_t accel_wom = ACCEL_FREQ_WAKEUP;
-    iam20680hpLowPowerMode(&gyroEnable, &avgCfg, &accel_wom, true);
 
     // Interruption settings, retreive standards
     IAM20680HP_intPinConfig_t intPinConfig;

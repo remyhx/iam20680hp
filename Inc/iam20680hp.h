@@ -49,29 +49,29 @@ SOFTWARE.
 
 
 //INITIAL CONFIGURATION
-#define SAMPLE_RATE_DIV 0x09 //1khz/(1+9) = 100hz
-#define LOW_PASS_FILTER_DLPF_CFG 0x01 //Table 18 datasheet
-#define GYRO_FS_SEL 0x00
-#define GYRO_FCHOICE 0x00
-#define ACCEL_FS_SEL 0x00
-#define ACCEL_FIFO_SIZE 0x00
-#define ACCEL_DEC2_CFG 0x00
-#define ACCEL_FCHOICE 0x00
-#define ACCEL_DLPF_CFG 0x05 
+#define SAMPLE_RATE_DIV 0x00                    //Sample rate divider, 0x09 = 1khz/(1+9) = 100hz
+#define LOW_PASS_FILTER_GYRO_DLPF_CFG 0x00      //Table 17 datasheet, gyro low pass filter
+#define GYRO_FS_SEL 0x00                        //Gyro Full Scale select
+#define GYRO_FCHOICE 0x00                       //Used to bypass DLPF
+#define ACCEL_FS_SEL 0x00                       //Accel Full Scale select
+#define ACCEL_FIFO_SIZE 0x00                    //FIFO size 0x00 = 512byte
+#define ACCEL_DEC2_CFG 0x00                     //Average samples for low power mode
+#define ACCEL_FCHOICE 0x00                      //Used to bypass DLPF
+#define ACCEL_DLPF_CFG 0x05                     //Low pass filter accelerometer 
 
 //WOL SETUP
-#define DEF_INT_LEVEL 1
-#define DEF_INT_OPEN 0
+#define DEF_INT_LEVEL 0                         //1 – The logic level for INT pin is active low. 0- The logic level for INT pin is active high. @note To reset the intel mode: if the active logic level is low, an unintended interrupt will be made after the neccessary reset..
+#define DEF_INT_OPEN 0                          //Open drain (1) or push/pull (0)
 #define DEF_LATCH_INT_EN 0
 #define DEF_INT_RD_CLEAR 0
 #define DEF_GDRIVE_INT_EN 0
 #define DEF_FIFO_OFLOW_EN 0
 #define DEF_DATA_RDY_EN 0
 
-#define WOL_THRESHOLD 0x2
-#define ACCEL_INTEL_MODE 0
-#define ACCEL_AVG_CFG 0
-#define ACCEL_FREQ_WAKEUP 7 //31.3hz table 19 datasheet 
+#define WOL_THRESHOLD 0x2                       //Wake on motion threshold (4mg/LSB)
+#define ACCEL_INTEL_MODE 0                      //Mode 0: reset at WOM enable, 1: changes per sample
+#define ACCEL_AVG_CFG 0                         //AVG filter configuration for low power mode
+#define ACCEL_FREQ_WAKEUP 7                     //31.3hz table 19 datasheet 
 
 
 
